@@ -3,17 +3,15 @@
 
 int main(){
 
-    uint64_t mine = 0b10000001000000100000010000001000000100000010000001;
-    uint64_t AIs = 0x8040201008040201;
-    
-    uint64_t test = 0b1000000000000000000000001000000010000000100000000000000010000000;
-    uint8_t etalone = 0b10011101;
-
-    printf("etalone: %d\n", etalone);
-    uint64_t result = (test * mine) >> (64-8);
-    printf("mine: result-etalone is %ld, result: %ld\n", result-etalone, result);
-    result = (test * AIs) >> (64-8);
-    printf("AIs: result-etalone is %ld, result: %ld\n", result-etalone, result);
-
+    uint64_t degrees = 0x8040201008040201;
+    //degrees = 1;
+    //degrees += 2<<8;
+    //degrees += 4<<16;
+    //degrees += 8<<24;
+    //degrees += 16<<32;
+    //degrees += 32<<40;
+    //degrees += 64<<48;
+    //degrees += 128<<56;
+    printf("degrees: %lu\n", degrees);
     return 0;
 }
