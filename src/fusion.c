@@ -40,3 +40,56 @@ uint8_t rank(uint64_t packedKeys, uint8_t key)
     x = (((x * K_STACKER) >> 55) & K_MASK) + ((x & 0x8000000000000000) >> 63);
     return (uint8_t) x;
 }
+
+
+fusNode* create_node(){
+    fusNode* node = (fusNode*)malloc(sizeof(*node));
+    node->keys[0] = ONES;
+    node->keys[1] = ONES;
+    node->keys[2] = ONES;
+
+    
+    node->C = 0;
+    node->M = 0;
+    node->D = 0;
+
+    node->diverseBites[0]=65;
+    node->diverseBites[1]=65;
+
+    node->childs[0] = NULL;
+    node->childs[1] = NULL;
+    node->childs[2] = NULL;
+    node->childs[3] = NULL;
+
+    node->packedScethches = 0;
+
+    return node;
+}
+
+void update_constants(fusNode *node)
+{
+    if(node->keys[0] == ONES) return;
+    
+    if(node->keys[1] != ONES) node->diverseBites[0] = msb(node->keys[0],node->keys[1]);
+    if(node->keys[2] != ONES) node->diverseBites[1] = msb(node->keys[1],node->keys[2]);
+
+    if(node->diverseBites[1] == node->diverseBites[0]) node->diverseBites[1] = 65;
+    if(node->diverseBites[1] < node->diverseBites[0])
+    {
+        uint64_t temp = node->diverseBites[0];
+        node->diverseBites[0] = node->diverseBites[1];
+        node->diverseBites[1] = temp;
+    }
+
+    node->C = 0;
+    if(node->diverseBites[0] != 65 ) node->C += 1 << (node->diverseBites[0]);
+    if(node->diverseBites[0] != 65 ) node->C += 1 << (node->diverseBites[0]);
+
+    node->M = 0;
+    if(node->diverseBites[0] != 65 ) node->M = 1 << (MACHINE_WORD_SIZE - node->diverseBites[0]);
+    if(node->diverseBites[1] != 65 )
+    {
+        uint8_t m2 = 
+    }
+
+}

@@ -1,12 +1,14 @@
 #ifndef FUSION_H
 #define FUSION_H
 #include <stdint.h>
+#include <stdlib.h>
 #include <math.h>
 
 
 // Максимальное значение, чтобы скетчи ключей влезали в машинное слово
 #define BRANCHING_FACTOR 3
 #define MACHINE_WORD_SIZE 64
+#define ONES 0xFFFFFFFFFFFFFFFF
 //для rank
 #define K_MULTIPLIER 0x0101010101010101
 #define K_ONES_MASK 0x8080808080808080
@@ -26,7 +28,7 @@ typedef struct fusNode fusNode;
 struct fusNode
 {
     uint64_t keys[BRANCHING_FACTOR];
-    uint8_t *diverseBites;
+    uint8_t diverseBites[2];
     uint64_t packedScethches;
 
     // Константы для вычисления ~скетча, название из ориг. статьи
@@ -34,6 +36,7 @@ struct fusNode
     uint64_t M;
     uint64_t D;
 
+    fusNode* childs[BRANCHING_FACTOR +1];
 
 };
 

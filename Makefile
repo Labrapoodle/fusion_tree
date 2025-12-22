@@ -6,26 +6,20 @@ all: fusionDSA
 
 -include main.d minheap.d fibheap.d
 
-fusionDSA: build/main.o build/libminheap.a build/fibheap.a
+fusionDSA: build/main.o build/libfusion.a 
 	gcc -Iincludes/ $(CFLAGS) $^ -o $@ -lm
 	rm build/main.d
 	rm build/main.o
-	rm build/minheap.o
-	rm build/minheap.d
-	rm build/fibheap.o
-	rm build/fibheap.d
+	rm build/fusion.o
+	rm build/fusion.d
+	
 
 build/main.o: src/main.c
 	gcc -c $(CFLAGS) $(CPPFLAGS)  $< -o $@
 
-build/libminheap.a: build/minheap.o
+build/libfusion.a: build/fusion.o
 	ar rcs $@ $^
 
-build/minheap.o: src/minheap.c
+build/fusion.o: src/fusion.c
 	gcc -c $(CPPFLAGS) $< -o $@
 
-build/fibheap.a: build/fibheap.o
-	ar rcs $@ $^
-
-build/fibheap.o: src/fibheap.c
-	gcc -c $(CPPFLAGS)  $< -o $@
