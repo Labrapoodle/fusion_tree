@@ -1,6 +1,7 @@
 #include "fusion.h"
 
 // мб переделать от одной переменной
+// возвращает  индекс + 1
 uint8_t msb(uint64_t u,uint64_t v)
 {
     if(u==v) return 0;
@@ -70,26 +71,59 @@ void update_constants(fusNode *node)
 {
     if(node->keys[0] == ONES) return;
     
-    if(node->keys[1] != ONES) node->diverseBites[0] = msb(node->keys[0],node->keys[1]);
-    if(node->keys[2] != ONES) node->diverseBites[1] = msb(node->keys[1],node->keys[2]);
+    if(node->keys[1] != ONES) node->diverseBites[0] = msb(node->keys[0],node->keys[1]) - 1;
+    if(node->keys[2] != ONES) node->diverseBites[1] = msb(node->keys[1],node->keys[2]) - 1;
 
     if(node->diverseBites[1] == node->diverseBites[0]) node->diverseBites[1] = 65;
     if(node->diverseBites[1] < node->diverseBites[0])
     {
-        uint64_t temp = node->diverseBites[0];
+        uint8_t temp = node->diverseBites[0];
         node->diverseBites[0] = node->diverseBites[1];
         node->diverseBites[1] = temp;
     }
 
     node->C = 0;
     if(node->diverseBites[0] != 65 ) node->C += 1 << (node->diverseBites[0]);
-    if(node->diverseBites[0] != 65 ) node->C += 1 << (node->diverseBites[0]);
+    if(node->diverseBites[1] != 65 ) node->C += 1 << (node->diverseBites[1]);
 
     node->M = 0;
-    if(node->diverseBites[0] != 65 ) node->M = 1 << (MACHINE_WORD_SIZE - node->diverseBites[0]);
-    if(node->diverseBites[1] != 65 )
+    uint8_t m0 = 0;
+    uint8_t m1 = 0;
+    
+    if(node->diverseBites[1] != 65 )  
     {
-        uint8_t m2 = 
+        uint8_t b0 = node->diverseBites[0] + m0;
+
+        for(int m1 = 0; m1 < MACHINE_WORD_SIZE; m1++)
+        {
+            uint8_t b1 = (node->diverseBites[1] + m1) & MACHINE_WORD_SIZE;
+            
+            if(b1 > b0 && (b1 - b0) < (MAX_KEY_DIFFERS << 3))
+            {
+                int s00 = (node->diverseBites[0] + m0) % MACHINE_WORD_SIZE;
+                int s01 = (node->diverseBites[0] + m1) % MACHINE_WORD_SIZE;
+                int s10 = (node->diverseBites[1] + m0) % MACHINE_WORD_SIZE;
+                int s11 = (node->diverseBites[1] + m1) % MACHINE_WORD_SIZE;
+            
+                if(s00 != s01 && s00 != s10 && s00 != s11 &&
+                    s01 != s10 && s01 != s11 &&
+                    s10 != s11)
+                {
+                    node->M = (1ULL << m0) | (1ULL << m1);
+                    node->D = (1ULL << b0) | (1ULL << b1); 
+                    break;
+                }
+            }
+        }
+    }
+    else if(node->diverseBites[0] != 65)
+    {
+        node->M = 1;
+        node->D = 1ULL << node->diverseBites[0]; 
+    }
+    else
+    {
+        node->M = 0;
     }
 
 }
