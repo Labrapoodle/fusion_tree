@@ -4,9 +4,12 @@
 #include <stdlib.h>
 #include <math.h>
 
-
+// С test bit 8
+#define FIELD_SIZE 8
+//Пригодится ровно в одном месте
+#define LOG_LOG_W 3
 // Максимальное значение, чтобы скетчи ключей влезали в машинное слово
-#define BRANCHING_FACTOR 3
+#define BRANCHING_FACTOR 8
 #define MACHINE_WORD_SIZE 64
 #define ONES 0xFFFFFFFFFFFFFFFF
 //для rank
@@ -29,21 +32,25 @@ typedef struct fusNode fusNode;
 
 struct fusNode
 {
-    uint64_t keys[BRANCHING_FACTOR];
-    uint8_t diverseBites[2];
-    uint64_t packedScethches;
-
-    // Константы для вычисления ~скетча, название из ориг. статьи
-    uint64_t C;
-    uint64_t M;
-    uint64_t D;
-
+    uint64_t keys[BRANCHING_FACTOR];     
     fusNode* childs[BRANCHING_FACTOR +1];
 
+    uint64_t packedImportantBits;
+    uint64_t packedKeys;
 };
 
-uint8_t msb(uint64_t u, uint64_t v);
-uint8_t rank(uint64_t packedKeys, uint8_t key);
+int msb(uint64_t x);
+uint64_t duplicate(uint8_t field, uint8_t amount);
+uint8_t select(uint64_t X, uint64_t K);
+uint8_t leftField(uint64_t packedKeys);
+uint64_t fillTestBits(uint8_t amount);
+uint8_t packedRank(uint64_t packedKeys, uint8_t key);
+uint64_t insertField(uint64_t packedKeys, uint8_t field, uint8_t position);
+uint64_t insertKey(uint64_t packedKeys, uint8_t key);
+uint64_t fill(uint64_t key, uint8_t pos);
+fusNode* construct(int keys[BRANCHING_FACTOR], uint8_t amount);
+
+uint8_t rank(uint64_t key, fusNode* node);
 
 
 
