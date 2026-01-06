@@ -192,7 +192,7 @@ uint8_t rank(uint64_t key, fusNode* node)
     {
         pos = msb(key ^ node->keys[0]);                                     // D.2
     }
-    else if(i == node->amount)
+    else if(i >= node->amount)
     {
         pos = msb(key ^ node->keys[node->amount - 1]);
     }
@@ -202,7 +202,7 @@ uint8_t rank(uint64_t key, fusNode* node)
         uint64_t next = msb(key ^ node->keys[i]);
         if(previous == ONES) previous = 0;
         if(next == ONES) next = 0;
-        pos = (previous > next) ? previous : next;                          // D.3
+        pos = (previous < next) ? previous : next;                          // D.3
     }
 
     uint64_t maskedSketch = fill(key,pos);                                      // D.4
@@ -211,14 +211,19 @@ uint8_t rank(uint64_t key, fusNode* node)
     uint8_t newPos = extractBits(maskedSketch, node->packedImportantBits);  // D.5
     i = packedRank(node->packedKeys,newPos);                                    // D.6
 
-   if (i > 0) {
-        // Проверяем ключ непосредственно перед i
-        if (key <= node->keys[i - 1]) {
-            return i - 1;
-        }
-    }
+    if(i == 0) return 0;
+    uint8_t preHofKeys = (node->packedKeys >> ((i-1) << 3)) & 0x7F;
+    if( preHofKeys == newPos && key < node->keys[i-1]) i--;
+    return i;
 
-    // Если i == 0 или ключ всё же больше текущего (i-1), 
-    // возвращаем i, но не больше общего количества ключей.
-    return (i > node->amount) ? node->amount : i;
+   //if (i > 0) {
+   //     // Проверяем ключ непосредственно перед i
+   //     if (key <= node->keys[i - 1]) {
+   //         return i - 1;
+   //     }
+   // }
+//
+   // // Если i == 0 или ключ всё же больше текущего (i-1), 
+   // // возвращаем i, но не больше общего количества ключей.
+   // return (i > node->amount) ? node->amount : i;
 }

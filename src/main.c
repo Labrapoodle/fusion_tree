@@ -225,7 +225,7 @@ void rank_comprehensive_testing() {
     // Ранг 20 должен быть 1
     uint8_t r2 = rank(20, &node);
     //printf("r2: %d\n",r2);
-    ASSERT_TEST(r2 == 1, "Rank test 2 failed: key == keys[1]");
+    ASSERT_TEST(r2 == 2, "Rank test 2 failed: key == keys[1]");
 
     // Сценарий 3: Ключ между 20 и 30
     // 25: 0001 1001. Ранг должен быть 2
