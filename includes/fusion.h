@@ -36,14 +36,22 @@ typedef struct fusNode fusNode;
 
 struct fusNode
 {
-    uint64_t keys[BRANCHING_FACTOR];     
+    uint64_t keys[BRANCHING_FACTOR];
+    int values[BRANCHING_FACTOR];     
     fusNode* childs[BRANCHING_FACTOR +1];
 
+    uint8_t isLeaf;
     uint8_t amount;
 
     uint64_t packedImportantBits;
     uint64_t packedKeys;
 };
+
+// Не забыть удалить
+void printBinOfUINT(uint64_t n, char *buffer);
+int getrand(int min, int max);
+
+
 
 int msb(uint64_t x);
 uint64_t duplicate(uint8_t field, uint8_t amount);
@@ -58,8 +66,23 @@ void construct(fusNode *node);
 
 uint8_t rank(uint64_t key, fusNode* node);
 
+//B-tree's funcs
+fusNode* lookup(fusNode* root, uint64_t key);
+fusNode* create_node();
 
-void printBinOfUINT(uint64_t n, char *buffer);
-int getrand(int min, int max);
+void splitChild(fusNode* parent, uint8_t index, fusNode* child);
+void insertNonFull(fusNode* node, uint64_t key, int value);
+void bTreeInsert(fusNode** rootAddr, uint64_t key, int value);
+
+void borrowFromPrev(fusNode* parent, int idx);
+void borrowFromNext(fusNode* parent, int idx);
+void mergeNodes(fusNode* parent, int idx);
+void deleteFromNode(fusNode* node, uint64_t key);
+void bTreeDelete(fusNode** rootAddr, uint64_t key);
+void freeBTree(fusNode** rootAddr);
+
+void printTree(fusNode* node, int level, int childIdx);
+
+
 
 #endif

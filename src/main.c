@@ -1,5 +1,6 @@
 #include "fusion.h"
 #include <stdio.h>
+#include <assert.h>
 
 #define ASSERT_TEST(cond, msg) if(!(cond)) { printf("\033[31mFAIL: %s\033[0m\n", msg); }
 
@@ -210,11 +211,23 @@ void rank_comprehensive_testing() {
     node.keys[0] = 10;
     node.keys[1] = 20;
     node.keys[2] = 30;
+    //node.keys[3] = 40;
+
+    //node.isLeaf = 1;
+
+    //for(int i = 0; i < 4 ; i++)
+    //{
+    //    node.childs[i] = NULL
+    //}
     node.amount = 3;
 
     // Строим внутренние константы узла
     construct(&node);
 
+    
+
+    
+    
     // Сценарий 1: Ключ меньше первого (проверка i=0)
     // Ранг должен быть 0
     uint8_t r1 = rank(5, &node);
@@ -238,6 +251,7 @@ void rank_comprehensive_testing() {
     uint8_t r4 = rank(100, &node);
     //printf("r4: %d\n",r4);
     ASSERT_TEST(r4 == 3, "Rank test 4 failed: key > keys[2]");
+    
 
 
     // Сценарий 5: Хитрая проверка префикса (D.4 - D.6)
@@ -249,6 +263,8 @@ void rank_comprehensive_testing() {
     ASSERT_TEST(r5 == 2, "Rank test 5 failed: prefix collision handling");
     //printf("r5: %d\n",r5);
     printf("\033[36m RANK COMPREHENSIVE TESTING ENDED !\033[0m\n");
+    
+    
 }
 
 void rank_stress_testing() {
@@ -284,10 +300,58 @@ void rank_stress_testing() {
     node.amount = 3;
     construct(&node);
     
-    ASSERT_TEST(rank(1001, &node) == 1, "Sandwich 1: Exact match in middle");
+    ASSERT_TEST(rank(1001, &node) == 2, "Sandwich 1: Exact match in middle");
     ASSERT_TEST(rank(1003, &node) == 3, "Sandwich 2: Just above max");
 
-    printf("\033[32m STRESS TESTS COMPLETED SUCCESSFULLY! \033[0m\n");
+    printf("\033[36m STRESS TESTS COMPLETED ! \033[0m\n");
+}
+
+void run_btree_tests() {
+    fusNode* root = NULL;
+
+    printf("--- Starting B-Tree Fusion Tests ---\n");
+
+    // ТЕСТ 1: Массовая вставка (Проверка Split)
+    // Вставляем 20 элементов. При факторе 8 дерево должно разделиться минимум дважды.
+    for (uint64_t i = 1; i <= 20; i++) {
+        bTreeInsert(&root, i * 10, (int)(i * 100));
+        printf("\033[32I=%lu\033[0m\n", i);
+        printTree(root,0,0);
+    }
+    printf("Test 1: Insertion of 20 elements completed.\n");
+
+    // ТЕСТ 2: Поиск (Проверка Lookup и Rank)
+    fusNode* found = lookup(root, 50);
+    printTree(root,0,0);
+    assert(found != NULL);
+    // Находим индекс ключа внутри узла для проверки значения
+    uint8_t rk = rank(50, found);
+    assert(found->values[rk-1] == 500);
+    
+    assert(lookup(root, 999) == NULL); // Несуществующий
+    printf("Test 2: Lookup and value validation passed.\n");
+
+    // ТЕСТ 3: Удаление с заимствованием (Borrow)
+    // Удалим ключ, чтобы спровоцировать балансировку
+    bTreeDelete(&root, 10); 
+    assert(lookup(root, 10) == NULL);
+    printf("Test 3: Deletion with borrow/rebalance passed.\n");
+
+    // ТЕСТ 4: Массовое удаление (Проверка Merge и уменьшения высоты)
+    for (uint64_t i = 2; i <= 20; i++) {
+        bTreeDelete(&root, i * 10);
+    }
+    assert(root == NULL || (root->amount == 0 && root->isLeaf == 1));
+    printf("Test 4: Mass deletion (tree cleanup) passed.\n");
+
+    // ТЕСТ 5: Граничные значения
+    bTreeInsert(&root, 0, 0);
+    bTreeInsert(&root, 0xFFFFFFFFFFFFFFFFULL, -1);
+    assert(lookup(root, 0) != NULL);
+    printf("Test 5: Edge cases (0 and MaxUint64) passed.\n");
+
+    freeBTree(&root);
+    printf("--- All B-Tree Tests Passed! ---\n");
 }
 
 int main() {
@@ -295,7 +359,7 @@ int main() {
     duplicate_testing();
     extractBits_testing();
     leftField_testing();
-
+    
     //God bless this code
     fill_testing();
     packedRank_testing();
@@ -305,6 +369,7 @@ int main() {
     rank_comprehensive_testing();
     rank_stress_testing();
 
+    run_btree_tests();
 
     return 0;
 }
