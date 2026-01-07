@@ -214,7 +214,7 @@ void construct(fusNode *node)
             node->packedImportantBits |= ((uint64_t)bits[i] << (unique_idx << 3));
             unique_idx++;
         }
-        node->packedImportantBits |= fillTestBits((uint8_t)n);
+        node->packedImportantBits |= fillTestBits((uint8_t)unique_idx);
     }
     
     
@@ -288,14 +288,23 @@ fusNode* lookup(fusNode* root, uint64_t key)
     fusNode* node = root;
     while(node != NULL)
     {
-        uint8_t rk = rank(key, node);    
+        
+        uint8_t rk = rank(key, node);
+        
+        
+
+        
+
+
         if(rk != 0 && key == node->keys[rk-1]) return node;     
             
-        if(node->isLeaf) return NULL; 
+        //if(node->isLeaf) return NULL; 
         
         node = node->childs[rk];
         
+        
     }
+    
     // Тут вернёт NULL
     return node;
 }
