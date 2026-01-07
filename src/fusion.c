@@ -183,7 +183,7 @@ uint64_t fill(uint64_t key, uint8_t pos)
 void construct(fusNode *node)
 {
     
-    uint64_t packedImportantBits = 0;
+    //uint64_t packedImportantBits = 0;
     uint64_t packedKeys = ONES;
 
     if(node->amount != 0)

@@ -1,25 +1,49 @@
 CFLAGS = -Wall -Werror -Wextra 
-CPPFLAGS =  -MMD -I includes/ 
+CPPFLAGS = -MMD -I includes/ 
+LDFLAGS = -lm
 
-.PHONY: all
+# Пути к файлам
+BUILD_DIR = build
+SRC_DIR = src
+TEST_DIR = tests
+
+.PHONY: all clean test
+
 all: fusionDSA
 
--include main.d minheap.d fibheap.d
+# --- Основная программа ---
+fusionDSA: $(BUILD_DIR)/main.o $(BUILD_DIR)/libfusion.a 
+	gcc $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
-fusionDSA: build/main.o build/libfusion.a 
-	gcc -Iincludes/ $(CFLAGS) $^ -o $@ -lm
-	rm build/main.d
-	rm build/main.o
-	rm build/fusion.o
-	rm build/fusion.d
+# --- Правило для тестов ---
+# Компилирует test.c и линкует с библиотекой
+test: $(TEST_DIR)/test_runner
 	
 
-build/main.o: src/main.c
-	gcc -c $(CFLAGS) $(CPPFLAGS)  $< -o $@
+$(TEST_DIR)/test_runner: $(BUILD_DIR)/test.o $(BUILD_DIR)/libfusion.a
+	gcc $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
-build/libfusion.a: build/fusion.o
+# --- Компиляция объектов ---
+$(BUILD_DIR)/main.o: $(SRC_DIR)/main.c | $(BUILD_DIR)
+	gcc -c $(CFLAGS) $(CPPFLAGS) $< -o $@
+
+$(BUILD_DIR)/fusion.o: $(SRC_DIR)/fusion.c | $(BUILD_DIR)
+	gcc -c $(CFLAGS) $(CPPFLAGS) $< -o $@
+
+$(BUILD_DIR)/test.o: $(TEST_DIR)/test.c | $(BUILD_DIR)
+	gcc -c $(CFLAGS) $(CPPFLAGS) $< -o $@
+
+# --- Статическая библиотека ---
+$(BUILD_DIR)/libfusion.a: $(BUILD_DIR)/fusion.o
 	ar rcs $@ $^
 
-build/fusion.o: src/fusion.c
-	gcc -c $(CPPFLAGS) $< -o $@
+# Создание папки build, если её нет
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
+# Автоматическое включение зависимостей (.d файлы)
+-include $(BUILD_DIR)/*.d
+
+clean:
+	rm -rf $(BUILD_DIR) fusionDSA
 
