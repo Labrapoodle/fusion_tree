@@ -82,6 +82,7 @@ void bTreeDelete(fusNode** rootAddr, uint64_t key);
 void freeBTree(fusNode** rootAddr);
 
 void printTree(fusNode* node, int level, int childIdx);
+int getHeight(fusNode* node);
 
 
 

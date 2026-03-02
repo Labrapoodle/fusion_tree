@@ -94,7 +94,7 @@ uint8_t extractBits(uint64_t X, uint64_t K)
 // O(1)
 uint8_t leftField(uint64_t packedKeys)
 {
-    return (uint8_t)(msb(packedKeys) >> LOG_LOG_W) + 1; //По-хорошему бы вставить проверки, что msb(x) != -1, но мы в AC0
+    return (uint8_t)(msb(packedKeys) >> LOG_LOG_W) + 1; 
 }
 
 // Возвращает маску соответствующую единицам
@@ -160,7 +160,7 @@ uint64_t insertField(uint64_t packedKeys, uint8_t field, uint8_t position)
 // Костыль в виде -1, т.к. packedRank 1-based
 uint64_t insertKey(uint64_t packedKeys, uint8_t key)
 {
-    //По-хорошему бы вставить проверки
+    
     
    
     return insertField(packedKeys,key,packedRank(packedKeys,key));
@@ -239,7 +239,7 @@ uint8_t rank(uint64_t key, fusNode* node)
     uint8_t i = packedRank(node->packedKeys,  extractBits(key,node->packedImportantBits)) ;         // D.1
     
 
-    if(!i) pos = msb(key ^ node->keys[0]);                                     // D.2    
+    if(!i) pos = msb(key ^ node->keys[0]);                                                          // D.2    
     else if(i >= node->amount) pos = msb(key ^ node->keys[node->amount - 1]);    
     else
     {
@@ -247,14 +247,14 @@ uint8_t rank(uint64_t key, fusNode* node)
         uint64_t next = msb(key ^ node->keys[i]);
         if(previous == ONES) previous = 0;
         if(next == ONES) next = 0;
-        pos = (previous < next) ? previous : next;                          // D.3
+        pos = (previous < next) ? previous : next;                                                  // D.3
     }
 
-    uint64_t maskedSketch = fill(key,pos);                                      // D.4
+    uint64_t maskedSketch = fill(key,pos);                                                          // D.4
     
 
-    uint8_t newPos = extractBits(maskedSketch, node->packedImportantBits);  // D.5
-    i = packedRank(node->packedKeys,newPos);                                    // D.6
+    uint8_t newPos = extractBits(maskedSketch, node->packedImportantBits);                          // D.5
+    i = packedRank(node->packedKeys,newPos);                                                        // D.6
 
     if(i == 0) return 0;
     uint8_t preHofKeys = (node->packedKeys >> ((i-1) << 3)) & 0x7F;
@@ -298,7 +298,7 @@ fusNode* lookup(fusNode* root, uint64_t key)
 
         if(rk != 0 && key == node->keys[rk-1]) return node;     
             
-        //if(node->isLeaf) return NULL; 
+         
         
         node = node->childs[rk];
         
@@ -310,7 +310,7 @@ fusNode* lookup(fusNode* root, uint64_t key)
 }
 
 void splitChild(fusNode* parent, uint8_t index, fusNode* child) {
-    fusNode* newNode = create_node(); // Используем твой конструктор
+    fusNode* newNode = create_node(); 
     newNode->isLeaf = child->isLeaf;
     
     // Если BRANCHING_FACTOR 8, то:
@@ -634,4 +634,20 @@ void printTree(fusNode* node, int level, int childIdx) {
             printTree(node->childs[i], level + 1, i);
         }
     }
+
+    
+}
+
+int getHeight(fusNode* node) {
+    if (node == NULL) {
+        return 0;
+    }
+    
+    // Если у узла нет первого ребенка, значит это лист
+    // (учитывая твою структуру, где childs[0] указывает на поддерево)
+    if (node->childs[0] == NULL) {
+        return 1;
+    }
+    
+    return 1 + getHeight(node->childs[0]);
 }
